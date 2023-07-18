@@ -1,6 +1,8 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
 
+    export let enableSubmit = false;
+
     let text = "";
 
     const dispatch = createEventDispatcher();
@@ -22,7 +24,13 @@
             id="user-input"
             autocomplete="off"
         />
-        <button type="submit" id="btn-submit">Send</button>
+        {#if enableSubmit}
+            <button type="submit" id="btn-submit">Send</button>
+        {:else}
+            <button type="button" id="btn-submit" disabled>
+                Send
+            </button>
+        {/if}
     </form>
 </div>
 

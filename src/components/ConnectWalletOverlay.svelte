@@ -1,11 +1,20 @@
 <script lang="ts">
+    import { WalletConnection } from "../services/wallet";
+    // reactive statement to keep track of the connection status
+    $: isConnected = $WalletConnection !== null;
+
+    const handleConnect = async () => {
+        await WalletConnection.connect();
+    };
 </script>
 
-<div id="connect-wallet-overlay">
-    <div class="connect-wallet fancy">
-        <button id="btn-connect"><span>Connect Wallet</span></button>
+{#if !isConnected}
+    <div id="connect-wallet-overlay">
+        <div class="connect-wallet fancy">
+            <button id="btn-connect" on:click={handleConnect}><span>Connect Wallet</span></button>
+        </div>
     </div>
-</div>
+{/if}
 
 <style>
     #connect-wallet-overlay {

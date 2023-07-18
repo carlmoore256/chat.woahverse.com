@@ -1,4 +1,17 @@
 <script lang="ts">
+    import { WalletConnection } from "../services/wallet";
+
+    $: isConnected = $WalletConnection !== null;
+
+    function handleConnect() {
+        if (!isConnected) 
+        {
+            WalletConnection.connect();
+        } else {
+            WalletConnection.disconnect();
+        }
+    }
+
 </script>
 
 <nav class="top-bar">
@@ -7,10 +20,15 @@
     </div>
     <div class="box right">
         <div class="connection-status">
-            <div id="wallet-status" class="wallet-status">
-                <div class="status-indicator not-connected" />
-                <div class="status-text">Wallet Not Connected</div>
-            </div>
+            <button id="wallet-status" on:click={handleConnect} class="wallet-status prevent-select">
+                {#if isConnected}
+                    <div class="status-indicator connected" />
+                    <div class="status-text">Wallet Connected</div>
+                {:else}
+                    <div class="status-indicator not-connected" />
+                    <div class="status-text">Wallet Not Connected</div>
+                {/if}
+            </button>
         </div>
     </div>
 </nav>
@@ -69,6 +87,17 @@
     .wallet-status {
         display: flex;
         align-items: center;
+        background-color: transparent;
+        border: none;
+        color: #fff;
+        padding: 10px;
+        border-radius: 4px;
+        transition-duration: 300ms;
+    }
+
+    .wallet-status:hover {
+        cursor: pointer;
+        background-color: #ffffff15;
     }
 
     .status-indicator {

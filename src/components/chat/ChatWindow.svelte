@@ -1,9 +1,9 @@
 <script lang="ts">
     import { writable } from "svelte/store";
-    import ChatSelector from "./chat-selector.svelte";
+    import ChatSelector from "./ChatSelector.svelte";
     // import ChatMessage from "./chat-message.svelte";
-    import ChatMessage from "./chat-message.svelte";
-    import ChatInput from "./chat-input.svelte";
+    import ChatMessage from "./ChatMessage.svelte";
+    import ChatInput from "./ChatInput.svelte";
 
     const messages = writable<any>([]);
 

@@ -1,4 +1,4 @@
-import { WalletConnection } from "./wallet";
+import { WalletConnection } from "./wallet-old";
 import { isTokenExpired } from "./jwt";
 import { writable } from "svelte/store";
 import type { IChatMessage, IChatSession } from "../models/chat-types";
