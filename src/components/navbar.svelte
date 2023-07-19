@@ -1,6 +1,8 @@
 <script lang="ts">
     import { WalletConnection } from "../services/wallet";
 
+    export let pageTitle = "NFT Chat";
+
     $: isConnected = $WalletConnection !== null;
 
     function handleConnect() {
@@ -16,7 +18,7 @@
 
 <nav class="top-bar">
     <div class="box left">
-        <h3 id="page-title">NFT Chat</h3>
+        <h3 id="page-title">{pageTitle}</h3>
     </div>
     <div class="box right">
         <div class="connection-status">
@@ -54,6 +56,10 @@
 
     .top-bar h3 {
         margin-right: 1em; /* Add some space to the right of the heading */
+    }
+
+    #page-title {
+        padding: 8px;
     }
 
     .box {

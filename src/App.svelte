@@ -9,13 +9,13 @@
     onMount(async() => {
         await initializeAuthentication();
     });
-    
+
 </script>
 
 <body>
     <ConnectWalletOverlay />
     <!-- <SignMessageOverlay /> -->
-    <Navbar />
+    <Navbar pageTitle={"Woahverse Chat"}/>
     <Chat />
 </body>
 

@@ -10,6 +10,7 @@
     import type { IChatMessage } from "../../models/chat-types";
     import { createNewChatMessage } from "../../utils/chatMessages";
     import { formatLLMMessage, messageHasCode } from "../../utils/chatMessages";
+    import { WalletConnection } from "../../services/wallet";
 
     const messages = writable<Map<string, IChatMessage>>(
         new Map<string, IChatMessage>()
@@ -25,9 +26,19 @@
     }
 
     let chatBody;
-    const scrollToBottom = async (node : Element) => {
+
+    const scrollToBottom = async (node: Element) => {
         node.scroll({ top: node.scrollHeight, behavior: "instant" });
     };
+
+    // caused some bugs
+    // if ($WalletConnection !== null) {
+    //     WalletConnection.subscribe((wallet) => {
+    //         if (wallet === null) {
+    //             clearMessages();
+    //         }
+    //     });
+    // }
 
     $: {
         if ($currentSession !== null) {
@@ -54,8 +65,7 @@
         });
         setTimeout(() => {
             scrollToBottom(chatBody);
-
-        }, 0)
+        }, 0);
     }
 
     function insertMessage(message: IChatMessage) {
