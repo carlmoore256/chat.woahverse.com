@@ -1,5 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
+    import { createNewChatMessage } from "../../utils/chatMessages";
 
     export let enableSubmit = false;
 
@@ -9,7 +10,8 @@
 
     function handleSubmit() {
         if (text == "") return;
-        dispatch("message", { text, type: "sent" });
+        const newMessage = createNewChatMessage("human", text);
+        dispatch("message", newMessage);
         text = "";
     }
 

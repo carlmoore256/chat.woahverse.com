@@ -11,4 +11,5 @@ export interface IChatMessage {
     message : string;
     role : string;
     createdAt : Date;
+    code? : string;
 }

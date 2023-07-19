@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { WalletConnection } from "../services/wallet";
+    import { WalletConnection } from "../../services/wallet";
+
     // reactive statement to keep track of the connection status
     $: isConnected = $WalletConnection !== null;
 
@@ -11,7 +12,7 @@
 {#if !isConnected}
     <div id="connect-wallet-overlay">
         <div class="connect-wallet fancy">
-            <button id="btn-connect" on:click={handleConnect}><span>Connect Wallet</span></button>
+            <button on:click={handleConnect}><span>Connect Wallet</span></button>
         </div>
     </div>
 {/if}

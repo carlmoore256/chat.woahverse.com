@@ -1,51 +1,21 @@
-import { WalletConnection } from "./wallet-old";
 import { isTokenExpired } from "./jwt";
-import { writable } from "svelte/store";
 import type { IChatMessage, IChatSession } from "../models/chat-types";
+import { signMessage } from "./wallet";
 
 interface TokenResponse {
     token: string;
 }
 
 class APIClient {
-    
-    constructor(public apiURL: string) {}
 
-    // static get Instance(): APIClient {
-    //     if (!window.apiClient) {
-    //         window.apiClient = new APIClient(window.env.API_URL);
-    //     }
-    //     return window.apiClient;
-    // }
-
-    static reset() {
-        localStorage.removeItem("jwtToken");
-        localStorage.removeItem("sessionId");
-    }
-
-    get token() {
-        const token = localStorage.getItem("jwtToken");
-        if (!token) {
-            return null;
-        }
-        if (isTokenExpired(token)) {
-            console.log("Token expired");
-            localStorage.removeItem("jwtToken");
-            return null;
-        }
-        return token;
-    }
-
-    set token(token) {
-        localStorage.setItem("jwtToken", token);
-    }
+    public static apiURL: string = "http://localhost:3002/v1/";
 
     /**
      * Send a request to the server for a message to sign
      */
-    async getNonceMessage(walletAddress : string) {
+    static async getNonceMessage(walletAddress: string) {
         const response = await fetch(
-            this.apiURL + "auth/nonce/" + walletAddress,
+            APIClient.apiURL + "auth/nonce/" + walletAddress,
             {
                 method: "GET",
             }
@@ -62,61 +32,60 @@ class APIClient {
      * Authenticates the wallet with the server, and if successful, returns a JWT token
      * @returns JWT Token
      */
-    async authenticate(): Promise<string> {
-        // let existingToken = localStorage.getItem('jwtToken');
-        // if (existingToken) return existingToken;
+    static async authenticate(walletAddress: string): Promise<{ success: boolean; error: any }> {
+        try {
+            // get the nonce message from the server, sign it, and send it back to verify
+            const message = await this.getNonceMessage(walletAddress);
+            const signature = await signMessage(message, walletAddress);
 
-        if (this.token) {
-            console.log("Already authenticated");
-            return this.token;
-        }
+            const response = await fetch(this.apiURL + "auth/verify/", {
+                method: "POST",
+                credentials: "include", // we need to include this before its set
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    address: walletAddress,
+                    signature,
+                    message,
+                }),
+            });
 
-        if (!WalletConnection.isConnected) {
-            throw new Error("Wallet not connected");
+            if (!response.ok) {
+                const errorResponse = await response.json();
+                return {
+                    success: false,
+                    error: errorResponse.error || "Failed to authenticate",
+                };
+            }
+            
+            // if everything is ok, no need to return a token, just return success
+            return { success: true, error: null };
+        } catch (err) {
+            // some unexpected error happened
+            return { success: false, error: err.message };
         }
-        // await WalletConnection.connect();
-        const address: string = WalletConnection.address;
-        const message: string = await this.getNonceMessage(address);
-        const signature: string = await WalletConnection.signMessage(message);
-        const response: Response = await fetch(this.apiURL + "auth/verify", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                address,
-                signature,
-                message,
-            }),
-        });
-        if (!response.ok) {
-            const errorResponse = await response.json();
-            throw new Error(errorResponse.error || "Failed to authenticate");
-        }
-        const data: TokenResponse = await response.json();
-        this.token = data.token;
-        localStorage.setItem("jwtToken", this.token);
-        return this.token;
     }
 
-    async getSessionId(): Promise<string> {
-        if (!this.token) {
-            throw new Error("Not authenticated");
+    static async isAuthenticated(): Promise<boolean> {
+        try {
+            const response = await fetch(this.apiURL + "auth/is-authenticated", {
+                method: "GET",
+                credentials: "include",
+            });
+            if (!response.ok) {
+                return false;
+            }
+            return true;
+        } catch (err) {
+            return false;
         }
-        let existingSessionId = localStorage.getItem("sessionId");
-        if (existingSessionId) return existingSessionId;
-        return await this.newSession();
     }
 
-    async newSession(): Promise<string> {
-        if (!this.token) {
-            throw new Error("Not authenticated");
-        }
+    static async newSession(): Promise<string> {
         const response = await fetch(this.apiURL + "chat/new-session", {
             method: "GET",
-            headers: {
-                Authorization: `Bearer ${this.token}`, // Using the getter here
-            },
+            credentials: "include",
         });
 
         if (!response.ok) {
@@ -124,22 +93,15 @@ class APIClient {
         }
 
         const data = await response.json();
-        const sessionId = data.sessionId;
-        localStorage.setItem("sessionId", sessionId);
-        return sessionId;
+        return data.sessionId;
     }
 
-    async loadSession(sessionId : string) : Promise<IChatMessage[]> {
-        if (!this.token) {
-            throw new Error("Not authenticated");
-        }
+    static async loadSession(sessionId: string): Promise<IChatMessage[]> {
         const response = await fetch(
             this.apiURL + "chat/load-session/" + `?sessionId=${sessionId}`,
             {
                 method: "GET",
-                headers: {
-                    Authorization: `Bearer ${this.token}`,
-                },
+                credentials: "include",
             }
         );
 
@@ -148,33 +110,41 @@ class APIClient {
         }
 
         const data = await response.json();
-        return data.history; // server should return session data here
+        const history = data.history.map((message: any) => {
+            message.createdAt = new Date(message.createdAt);
+            return message;
+        });
+        return history; // server should return session data here
     }
 
-    async listSessions() : Promise<IChatSession[]> {
-        if (!this.token) {
-            throw new Error("Not authenticated");
-        }
+    static async listSessions(): Promise<IChatSession[]> {
         const response = await fetch(this.apiURL + "chat/list-sessions", {
             method: "GET",
-            headers: {
-                Authorization: `Bearer ${this.token}`,
-            },
+            credentials: "include",
         });
 
         if (!response.ok) {
             throw new Error("Failed to list sessions");
         }
         const data = await response.json();
-        return data.sessions;
+        const sessions = data.sessions.map((session: any) => {
+            session.createdAt = new Date(session.createdAt);
+            return session;
+        });
+        return sessions;
     }
 
-
-    sendMessage(sessionId : string, message : string, callback : (message : IChatMessage) => void) {
-        if (!this.token) {
-            throw new Error("Not authenticated");
-        }
-        console.log(`Sending message to ${sessionId} | ${JSON.stringify({ sessionId, message })}`)
+    static sendMessage(
+        sessionId: string,
+        message: string,
+        callback: (message: IChatMessage) => void
+    ) {
+        console.log(
+            `Sending message to ${sessionId} | ${JSON.stringify({
+                sessionId,
+                message,
+            })}`
+        );
         this.postRequestSSE(
             `${this.apiURL}chat/message`,
             { sessionId, message },
@@ -182,14 +152,14 @@ class APIClient {
         );
     }
 
-    postRequestSSE(url : string, data : any, callback : (data : any) => void) {
+    static postRequestSSE(url: string, data: any, callback: (data: any) => void) {
         // Make the initial POST request
         fetch(url, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
                 Accept: "text/event-stream", // Ensure we're accepting an SSE stream in the response
-                Authorization: `Bearer ${this.token}`,
             },
             body: JSON.stringify(data),
         })

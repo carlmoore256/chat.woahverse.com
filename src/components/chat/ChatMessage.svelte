@@ -1,9 +1,19 @@
 <script lang="ts">
-    export let message = { text: '', type: 'sent' };
+
+    import type { IChatMessage } from "../../models/chat-types";
+
+    export let chatMessage : IChatMessage;
+
+    let messageClass = chatMessage.role === "human" ? "sent" : "received";
+
+    if (chatMessage.code) {
+        console.log("Message has code")
+        // messageClass += " code-block";
+    }
 </script>
 
-<div class="message {message.type}">
-    {message.text}
+<div class="message {messageClass}">
+    {chatMessage.message}
 </div>
 
 

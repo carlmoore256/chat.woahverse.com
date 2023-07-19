@@ -2,15 +2,19 @@
     import Chat from "./components/chat/ChatWindow.svelte";
     import Navbar from "./components/Navbar.svelte";
     import { onMount } from "svelte";
-    import ConnectWalletOverlay from "./components/ConnectWalletOverlay.svelte";
+    import ConnectWalletOverlay from "./components/wallet/ConnectWalletOverlay.svelte";
+    import APIClient from "./services/api";
+    import { initializeAuthentication } from "./utils/isAuthenticated";
 
-    onMount(() => {
-        // const api = new APIClient("https://api.woahverse.com:3002/v1");
+    onMount(async() => {
+        await initializeAuthentication();
     });
+    
 </script>
 
 <body>
     <ConnectWalletOverlay />
+    <!-- <SignMessageOverlay /> -->
     <Navbar />
     <Chat />
 </body>
