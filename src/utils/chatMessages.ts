@@ -28,9 +28,7 @@ export function messageHasCode(message: string): boolean {
 
 export function formatMessageWithCode(message: string): string {
     const codeBlockMatch = CODE_BLOCK_REGEX.exec(message);
-    console.log("CODE BLOCK MATCH", codeBlockMatch);
     if (codeBlockMatch) {
-        console.log("CODE BLOCK MATCH");
         // The code block, including backticks and potential language specification
         const fullMatch = codeBlockMatch[0];
         // The content of the code block, without backticks
@@ -50,7 +48,6 @@ export function formatMessageWithCode(message: string): string {
                 fullMatch,
                 `<div class="code-block language-${potentialLang}"><pre><code>${codeWithoutLang}</code></pre></div>`
             );
-            console.log("MESSAGE", message);
         } else {
             // If no known language was found, revert to the previous behavior
             message = message.replace(
@@ -67,6 +64,5 @@ export function formatLLMMessage(message: string): string {
     if (messageHasCode(formattedMessage)) {
         formattedMessage = formatMessageWithCode(formattedMessage);
     }
-    console.log("formattedMessage", formattedMessage);
     return formattedMessage;
 }

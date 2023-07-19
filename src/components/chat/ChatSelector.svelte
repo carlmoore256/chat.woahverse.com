@@ -35,6 +35,7 @@
                     <h4>{session.title || 'Untitled'}</h4>
                     <p>{session.numMessages} Messages</p>
                     <p>{getTimeAgo(session.createdAt)}</p>
+                    <p>{session.id == $currentSession ? "(Current)" : ""}</p>
                 </button>
             {/each}
         </div>
@@ -95,6 +96,7 @@
         border: none;
         /* add drop shadow */
         filter: drop-shadow(0px 0px 3px rgb(0, 0, 0));
+        font-size: 15px;
     }
 
     .session-item p {

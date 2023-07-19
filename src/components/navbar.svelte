@@ -16,7 +16,7 @@
 
 </script>
 
-<nav class="top-bar">
+<nav class="top-bar {isConnected ? "bar-connected" : ""}">
     <div class="box left">
         <h3 id="page-title">{pageTitle}</h3>
     </div>
@@ -52,6 +52,11 @@
         top: 10px;
         z-index: 101;
         backdrop-filter: blur(3px);
+        transition-duration: 500ms;
+    }
+
+    .bar-connected {
+        background-color: rgba(221, 224, 228, 0);
     }
 
     .top-bar h3 {
