@@ -95,7 +95,6 @@
             $currentSession,
             sendMessage.message,
             (data: any) => {
-                console.log("Got response: ", data);
                 messages.update((map) => {
                     const message = map.get(replyMessage.id);
                     message.message = formatLLMMessage(message.message + data);

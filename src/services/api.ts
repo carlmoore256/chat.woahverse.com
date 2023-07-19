@@ -8,7 +8,7 @@ interface TokenResponse {
 
 class APIClient {
 
-    public static apiURL: string = "http://localhost:3002/v1/";
+    public static apiURL: string = "https://api.woahverse.com:3002/v1/";
 
     /**
      * Send a request to the server for a message to sign
